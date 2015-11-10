@@ -21,7 +21,7 @@
 
 // This example creates a simple polygon representing the Bermuda Triangle.
 
-function buildpolygon(map,coords) {
+function buildpolygon(map,coords,color) {
  // Define the LatLng coordinates for the polygon's path.
   var triangleCoords = [
     {lat: coords[0], lng: coords[1]},
@@ -32,15 +32,15 @@ function buildpolygon(map,coords) {
   ];
 
   // Construct the polygon.
-  var bermudaTriangle = new google.maps.Polygon({
+  var polygon = new google.maps.Polygon({
     paths: triangleCoords,
-    strokeColor: '#FF0000',
+    strokeColor: color,
     strokeOpacity: 0.8,
     strokeWeight: 2,
-    fillColor: '#FF0000',
-    fillOpacity: 0.35
+    fillColor: color,
+    fillOpacity: 0.5
   });
-  bermudaTriangle.setMap(map);
+  polygon.setMap(map);
 }
 
 function initMap() {
@@ -50,10 +50,14 @@ function initMap() {
     mapTypeId: google.maps.MapTypeId.TERRAIN
   });
 
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
   var coordss = %COORDS%;
 
-  for (var i = 0; i < coordss.length; i++) {
-		      buildpolygon(map, coordss[i]);
+  for (var i = 0; i < coordss.length; i+=2) {
+      buildpolygon(map, coordss[i],coordss[i+1]);
   }
 }
 
