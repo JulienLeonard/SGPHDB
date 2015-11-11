@@ -14,9 +14,6 @@
         height: 100%;
       }
     </style>
-  </head>
-  <body>
-    <div id="map"></div>
     <script>
 
 // This example creates a simple polygon representing the Bermuda Triangle.
@@ -40,28 +37,76 @@ function buildpolygon(map,coords,color) {
     fillColor: color,
     fillOpacity: 0.5
   });
-  polygon.setMap(map);
+  // polygon.setMap(map);
+  return polygon;
 }
 
+function rgbToHex(r, g, b) {
+    return "#" + ( (1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+
+var map = null;
+var HDBs = %HDBS%;
+
+var years = {};
+var yearlist = [];
+
+
 function initMap() {
-  var map = new google.maps.Map(document.getElementById('map'), {
+  map = new google.maps.Map(document.getElementById('map'), {
     zoom: 12,
     center: {lat: 1.352083, lng: 103.819836},
     mapTypeId: google.maps.MapTypeId.TERRAIN
   });
 
-function rgbToHex(r, g, b) {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  for (var i = 0; i < HDBs.length; i+=1) {
+      var lease = HDBs[i].lease;
+      if (!(lease in years)) {
+        yearlist.push(lease);
+	years[lease] = [];
+      }
+      years[lease].push(buildpolygon(map, HDBs[i].coords,HDBs[i].color));
+   }
 }
 
-  var coordss = %COORDS%;
 
-  for (var i = 0; i < coordss.length; i+=2) {
-      buildpolygon(map, coordss[i],coordss[i+1]);
-  }
+
+
+function showVal(value) {
+    console.log("year " + value);     
+
+    if (yearlist) {
+       for (var i = 0; i < yearlist.length; i++) {
+        var cmap = null;
+        if (yearlist[i] <= value) {
+           cmap = map;
+        }
+	polygons = years[yearlist[i]]; 		
+
+	if (polygons != undefined) {
+         	console.log("year",yearlist[i],"npolygons",polygons.length,"cmap",cmap);
+
+	        for (var j = 0; j < polygons.length; j++) {
+                    polygon = polygons[j];
+                   polygon.setMap(cmap);
+                }
+        }
+      }
+    }
+
+    document.getElementById('yearlabel').innerHTML = "year " + value; 
 }
 
     </script>
+
+  </head>
+  <body>
+    <div id="map"></div>
+    <form>
+        <input type="range" name="points" min="%RANGEMIN%" max="%RANGEMAX%" oninput="showVal(this.value)">
+    </form>
+    <div id="yearlabel">TODO</div>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBU64AzWbUE14EhZ9TITH4j5PiCY1iGemc&signed_in=true&callback=initMap"></script>
   </body>
 </html>

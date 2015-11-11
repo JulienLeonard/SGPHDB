@@ -10,20 +10,21 @@ def dumpmap(geolocs,leases):
     leaserange = lrange(leases.values()) 
     puts("leaserange",leaserange)
 
-    COORDS = []
+    HDBS = []
     for key in geolocs:
         if geolocs[key] != None:
-            COORDS.append("[" + ",".join([str(c) for c in geolocs[key]]) + "]")
+            HDB = "{coords: [" + ",".join([str(c) for c in geolocs[key]]) + "],"
             if key in leases:
                 b = int(255.0 * (1.0 - abscissa(leaserange,leases[key])))
                 r = 255 - b
-                COORDS.append("rgbToHex(" + str(r) + ",0," + str(b) + ")")
+                HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(leases[key])) + "}"
             else:
-                COORDS.append("rgbToHex(125,125,125)")
+                HDB = HDB + "color: rgbToHex(125,125,125), lease: " + str(int(leaserange[0])) + "}"
+            HDBS.append(HDB)
             
-    COORDS = "[" + ",".join(COORDS) + "]"
+    HDBS = "[" + ",".join(HDBS) + "]"
 
-    content = template.replace("%COORDS%",COORDS)
+    content = template.replace("%HDBS%",HDBS).replace("%RANGEMIN%",str(int(leaserange[0]))).replace("%RANGEMAX%",str(int(leaserange[1])))
     file = open("try.html", "w")
     file.write(content)
     file.close()
@@ -52,7 +53,7 @@ nlines = 0
 blockadresses  ={}
 leases = {}
 
-for line in content.split("\n")[1:]:
+for line in content.split("\n")[20000:]:
     (month,town,flat_type,block,street_name,storey_range,floor_area_sqm,flat_model,lease_commence_date,resale_price) = line.split(",")
     block = block.strip()
     street_name = street_name.strip()
