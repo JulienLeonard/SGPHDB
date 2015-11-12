@@ -61,15 +61,26 @@ def getgeoloc(block,streetname):
                 coords = []
                 for p in [p1,p2]:
                     coords = coords + [p["lat"],p["lng"]]
-                return coords
+                return (coords,1)
             else:
                  if "location" in block_location["geometry"]:
                      p = block_location["geometry"]["location"]
                      coords = [p["lat"],p["lng"]]
                      r = 0.0001
                      coords = [coords[0] - r, coords[1] - r, coords[0] + r, coords[1] + r]
-                     return coords
-    return None
+                     return (coords,1)
+    else:
+        if len(result) == 1:
+             location = result[0]
+             block_location = location  
+             if "geometry" in block_location:
+                 if "location" in block_location["geometry"]:
+                     p = block_location["geometry"]["location"]
+                     coords = [p["lat"],p["lng"]]
+                     r = 0.0001
+                     coords = [coords[0] - r, coords[1] - r, coords[0] + r, coords[1] + r]
+                     return (coords,2)
+    return (None,0)
 
 
 def test():

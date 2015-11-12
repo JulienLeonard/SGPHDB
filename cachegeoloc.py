@@ -1,26 +1,29 @@
 from geolocutils import *
 from basics import *
+# define geolocs
 from geoloccache import *
 
-def dumpmap(geolocs,leases):
+def dumpmap(geolocs,HDBs):
 
     with open("viewtemplate.html", 'r') as content_file:
         template = content_file.read()
 
-    leaserange = lrange(leases.values()) 
+    leaserange = lrange([float(cHDB.lease) for cHDB in HDBs]) 
     puts("leaserange",leaserange)
 
     HDBS = []
-    for key in geolocs:
-        if geolocs[key] != None:
-            HDB = "{coords: [" + ",".join([str(c) for c in geolocs[key]]) + "],"
-            if key in leases:
-                b = int(255.0 * (1.0 - abscissa(leaserange,leases[key])))
+    for cHDB in HDBs:
+        if cHDB.blockadress() in geolocs:
+            (HDBgeoloc,reliability) = geolocs[cHDB.blockadress()]
+            if HDBgeoloc != None:
+                HDB = "{coords: [" + ",".join([str(c) for c in HDBgeoloc]) + "],"
+                b = int(255.0 * (1.0 - abscissa(leaserange,float(cHDB.lease))))
                 r = 255 - b
-                HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(leases[key])) + "}"
-            else:
-                HDB = HDB + "color: rgbToHex(125,125,125), lease: " + str(int(leaserange[0])) + "}"
-            HDBS.append(HDB)
+                HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(cHDB.lease)) + "}"
+                #else:
+                #    puts("error: adress " + key + " no lease")
+                #    HDB = HDB + "color: rgbToHex(125,125,125), lease: " + str(int(leaserange[0])) + "}"
+                HDBS.append(HDB)
             
     HDBS = "[" + ",".join(HDBS) + "]"
 
@@ -46,49 +49,66 @@ with open(filepath, 'r') as content_file:
     content = content_file.read()
 
 
-maxnqueries = 0
-nqueries = 0
-nlines = 0
 
-blockadresses  ={}
-leases = {}
 
-for line in content.split("\n")[20000:]:
+class HDB:
+    def __init__(self,month,town,flat_type,block,street_name,storey_range,floor_area_sqm,flat_model,lease_commence_date,resale_price):
+        self.month = month.strip()
+        self.town  = town.strip()
+        self.flat_type = flat_type.strip()
+        self.block = block.strip()
+        self.street_name = street_name.strip()
+        self.storey_range = storey_range.strip()
+        self.floor_area_sqm = floor_area_sqm.strip()
+        self.flat_model = flat_model.strip()
+        self.lease = int(lease_commence_date.strip())
+        self.resale_price = resale_price.strip()
+
+    def blockadress(self):
+        return (self.block + " " + self.street_name).strip()
+
+HDBs = []
+
+for line in content.split("\n")[1:]:
     (month,town,flat_type,block,street_name,storey_range,floor_area_sqm,flat_model,lease_commence_date,resale_price) = line.split(",")
-    block = block.strip()
-    street_name = street_name.strip()
-    blockadress =  (block + " " + street_name).strip()
-    if not blockadress in blockadresses:
-        blockadresses[blockadress] = 0
-    blockadresses[blockadress] += 1    
-    leases[blockadress] = float(lease_commence_date.strip())
-    # leases[blockadress] = float(floor_area_sqm.strip())
+    cHDB = HDB(month,town,flat_type,block,street_name,storey_range,floor_area_sqm,flat_model,lease_commence_date,resale_price)
+    HDBs = HDBs + [cHDB]
 
+
+def blockadress2HDNnumber(HDBs):
+    blockadresses = {}
+    for cHDB in HDBs:
+        blockadress =  cHDB.blockadress()
+        if not blockadress in blockadresses:
+            blockadresses[blockadress] = 0
+        blockadresses[blockadress] += 1
+
+
+    #sortlist = [(blockadresses[blockadress],blockadress) for blockadress in blockadresses]
+    #sortlist.sort()
+    #for (n,adress) in sortlist:
+    #    puts("adress",adress,"n",n)
+
+    return blockadresses
+
+blockadresses = blockadress2HDNnumber(HDBs)
 puts("nblockadresses",len(blockadresses.keys()))
-sortlist = [(blockadresses[blockadress],blockadress) for blockadress in blockadresses]
-sortlist.sort()
-#for (n,adress) in sortlist:
-#    puts("adress",adress,"n",n)
 
 dumpcache(geolocs)
-dumpmap(geolocs,leases)
+dumpmap(geolocs,HDBs)
 
+maxnqueries = 1000
+nqueries = 0
 
-for line in content.split("\n")[1000:]:
-    puts("nline",nlines)
-    nlines += 1
-    # print line.split(",")
-    (month,town,flat_type,block,street_name,storey_range,floor_area_sqm,flat_model,lease_commence_date,resale_price) = line.split(",")
-    block = block.strip()
-    street_name = street_name.strip()
-    blockadress =  (block + " " + street_name).strip()
+for cHDB in HDBs:
+    blockadress = cHDB.blockadress()
     if not blockadress in geolocs:
-        coords = getgeoloc(block,street_name)
+        (coords,reliability) = getgeoloc(cHDB.block,cHDB.street_name)
         puts("adress",blockadress,"coords",coords)
-        geolocs[blockadress] = coords
+        geolocs[blockadress] = (coords,reliability)
         if not coords == None:
             dumpcache(geolocs)
-            dumpmap(geolocs,leases)
+            dumpmap(geolocs,HDBs)
         nqueries += 1
         if nqueries > maxnqueries:
             break
