@@ -8,18 +8,21 @@ def dumpmap(geolocs,HDBs):
     with open("viewtemplate.html", 'r') as content_file:
         template = content_file.read()
 
-    leaserange = lrange([float(cHDB.lease) for cHDB in HDBs]) 
+    leases     = {cHDB.blockadress(): cHDB.lease for cHDB in HDBs}
+    leaserange = lrange([float(lease) for lease in leases.values()]) 
+
     puts("leaserange",leaserange)
 
     HDBS = []
-    for cHDB in HDBs:
-        if cHDB.blockadress() in geolocs:
-            (HDBgeoloc,reliability) = geolocs[cHDB.blockadress()]
+    for blockadress in leases.keys():
+        lease = leases[blockadress]
+        if blockadress in geolocs:
+            (HDBgeoloc,reliability) = geolocs[blockadress]
             if HDBgeoloc != None:
                 HDB = "{coords: [" + ",".join([str(c) for c in HDBgeoloc]) + "],"
-                b = int(255.0 * (1.0 - abscissa(leaserange,float(cHDB.lease))))
+                b = int(255.0 * (1.0 - abscissa(leaserange,float(lease))))
                 r = 255 - b
-                HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(cHDB.lease)) + "}"
+                HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(lease)) + "}"
                 #else:
                 #    puts("error: adress " + key + " no lease")
                 #    HDB = HDB + "color: rgbToHex(125,125,125), lease: " + str(int(leaserange[0])) + "}"
