@@ -85,7 +85,7 @@ function showVal(value) {
 	polygons = years[yearlist[i]]; 		
 
 	if (polygons != undefined) {
-         	console.log("year",yearlist[i],"npolygons",polygons.length,"cmap",cmap);
+         	// console.log("year",yearlist[i],"npolygons",polygons.length,"cmap",cmap);
 
 	        for (var j = 0; j < polygons.length; j++) {
                     polygon = polygons[j];
@@ -103,10 +103,16 @@ function showVal(value) {
   </head>
   <body>
     <div id="map"></div>
-    <form>
-        <input type="range" name="points" min="%RANGEMIN%" max="%RANGEMAX%" oninput="showVal(this.value)">
-    </form>
+    <table width="100%">
+    <tr>
+    <td>   
     <div id="yearlabel">TODO</div>
+    </td>
+    <td width="90%">
+    <form>
+        <input type="range" name="points" min="%RANGEMIN%" max="%RANGEMAX%" width="1000px" oninput="showVal(this.value)">
+    </form>
+    </td>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBU64AzWbUE14EhZ9TITH4j5PiCY1iGemc&signed_in=true&callback=initMap"></script>
   </body>
 </html>
