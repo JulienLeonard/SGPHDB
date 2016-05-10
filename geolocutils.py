@@ -5,6 +5,7 @@ import json
 import pprint
 from basics import *
 
+
 def getgeoloc(block,streetname):
     # Use the json module to dump a dictionary to a string for posting.
     data_string = urllib.quote(json.dumps({'id': 'data-explorer'}))
@@ -84,7 +85,7 @@ def getgeoloc(block,streetname):
 
 
 def test():
-    coords = getgeoloc("510 ANG MO KIO AVE 8")
+    coords = getgeoloc("510","ANG MO KIO AVE 8")
     if coords == None:
         puts("no coords")
     else:

@@ -18,7 +18,7 @@
 
 // This example creates a simple polygon representing the Bermuda Triangle.
 
-function buildpolygon(map,coords,color) {
+function buildpolygon(map,adress,coords,color) {
  // Define the LatLng coordinates for the polygon's path.
   var triangleCoords = [
     {lat: coords[0], lng: coords[1]},
@@ -29,13 +29,19 @@ function buildpolygon(map,coords,color) {
   ];
 
   // Construct the polygon.
-  var polygon = new google.maps.Polygon({
-    paths: triangleCoords,
-    strokeColor: color,
-    strokeOpacity: 0.8,
-    strokeWeight: 2,
-    fillColor: color,
-    fillOpacity: 0.5
+  //var polygon = new google.maps.Polygon({
+  //  paths: triangleCoords,
+  //  strokeColor: color,
+  //  strokeOpacity: 0.8,
+  //  strokeWeight: 2,
+  //  fillColor: color,
+  //  fillOpacity: 0.5,
+  //  title: "toto"
+  // });
+   var polygon = new google.maps.Marker({
+    position: {lat: (coords[0] + coords[2])/2.0, lng: (coords[1] + coords[3])/2.0},
+    // map: map,
+    title: adress
   });
   // polygon.setMap(map);
   return polygon;
@@ -66,7 +72,7 @@ function initMap() {
         yearlist.push(lease);
 	years[lease] = [];
       }
-      years[lease].push(buildpolygon(map, HDBs[i].coords,HDBs[i].color));
+      years[lease].push(buildpolygon(map, HDBs[i].adress,HDBs[i].coords,HDBs[i].color));
    }
 }
 
@@ -79,7 +85,7 @@ function showVal(value) {
     if (yearlist) {
        for (var i = 0; i < yearlist.length; i++) {
         var cmap = null;
-        if (yearlist[i] <= value) {
+        if (yearlist[i] >= value) {
            cmap = map;
         }
 	polygons = years[yearlist[i]]; 		

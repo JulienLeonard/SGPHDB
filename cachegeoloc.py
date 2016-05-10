@@ -19,7 +19,7 @@ def dumpmaplease(geolocs,HDBs):
         if blockadress in geolocs:
             (HDBgeoloc,reliability) = geolocs[blockadress]
             if HDBgeoloc != None:
-                HDB = "{coords: [" + ",".join([str(c) for c in HDBgeoloc]) + "],"
+                HDB = "{coords: [" + ",".join([str(c) for c in HDBgeoloc]) + "],adress: \"" + blockadress +  "\","
                 b = int(255.0 * (1.0 - abscissa(leaserange,float(lease))))
                 r = 255 - b
                 HDB = HDB + "color: rgbToHex(" + str(r) + ",0," + str(b) + "), lease: " + str(int(lease)) + "}"
@@ -166,7 +166,8 @@ blockadresses = blockadress2HDNnumber(HDBs)
 puts("nblockadresses",len(blockadresses.keys()))
 
 dumpcache(geolocs)
-dumpmappricepersqm(geolocs,HDBs)
+# dumpmappricepersqm(geolocs,HDBs)
+dumpmaplease(geolocs,HDBs)
 
 def computegeolocs(HDBs):
     maxnqueries = 0
